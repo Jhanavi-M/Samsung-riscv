@@ -9,7 +9,7 @@ The program demonstrates:
 - Observations on the compiled RISC-V code with optimization levels `-O1` and `-Ofast`.
 
 ### C Code
-The C program computes the sum using the formula:
+The C program computes the sum using the looping algorithm.
 
 ### RISC-V Code Observations
 The compiled RISC-V code was analyzed using `objdump`. Key findings are:
