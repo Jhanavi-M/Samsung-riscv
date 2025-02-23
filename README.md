@@ -1,4 +1,9 @@
 # Samsung-riscv
+Basic Details:
+Name : Jhanavi M
+Email: jhanavi.m2005@gmail.com
+College: Dayananda Sagar College Of Enginering
+
 RISC-V Mission 2025 | Empowering Semiconductor Innovation 🚀
 
 Welcome to my GitHub repository! 🎉
