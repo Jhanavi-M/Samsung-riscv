@@ -1,1 +1,2 @@
-
+Smart Automation Using ESP-8266, VSD-Mini RISC-V, and Blynk App
+In this project, we aim to develop a smart automation system that allows remote control of an LED using the Blynk app. The system integrates the ESP-8266 Wi-Fi module for wireless communication and the VSD Squadron Mini RISC-V board to process commands and control the LED. The Blynk platform provides a user-friendly interface for seamless IoT implementation, enabling real-time monitoring and control through a smartphone. This project showcases the fusion of embedded systems and IoT technology, highlighting the potential for smart home automation solutions.
