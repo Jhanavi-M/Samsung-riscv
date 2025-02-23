@@ -1,1 +1,261 @@
+#include <ch32v00x.h>
+#include <stdio.h>
+#include <string.h>
 
+// Initialize UART1 for communication with ESP-8266 (PD2 for RX)
+void UART1_Init(void) {
+    RCC->APB2PCENR |= RCC_APB2Periph_USART1;  // Enable UART1 clock
+    RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;   // Enable GPIOD clock
+
+    GPIOD->CFGLR &= ~(0xF << (2 * 4));  // Clear PD2 config
+    GPIOD->CFGLR |= (0x4 << (2 * 4));   // Set PD2 as input with pull-up
+
+    USART1->BRR = 48000000 / 115200; // Baud rate for ESP-8266 (115200)
+    USART1->CTLR1 |= USART_CTLR1_RE | USART_CTLR1_TE | USART_CTLR1_UE; // Enable RX, TX, and UART
+}
+
+// Send a string over UART1
+void UART1_SendString(const char *str) {
+    while (*str) {
+        while (!(USART1->STATR & USART_STATR_TXE)); // Wait until TX is empty
+        USART1->DATAR = *str++;
+    }
+}
+
+// Read a single character from UART1
+char UART1_Read(void) {
+    while (!(USART1->STATR & USART_STATR_RXNE)); // Wait for data
+    return (char)USART1->DATAR;
+}
+
+// Initialize GPIO for LEDs (PD3 - PD6)
+void GPIO_Init(void) {
+    RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;  // Enable GPIOD clock
+
+    GPIOD->CFGLR &= ~((0xF << (3 * 4)) | (0xF << (4 * 4)) | (0xF << (5 * 4)) | (0xF << (6 * 4)));
+    GPIOD->CFGLR |= ((0x1 << (3 * 4)) | (0x1 << (4 * 4)) | (0x1 << (5 * 4)) | (0x1 << (6 * 4))); // Output push-pull
+}
+
+// Control LED state
+void LED_Control(int led, int state) {
+    int pin = 3 + led; // LED 1 -> PD3, LED 2 -> PD4, etc.
+    if (state) {
+        GPIOD->BSHR = (1 << pin);  // Turn LED ON
+    } else {
+        GPIOD->BSHR = (1 << (pin + 16)); // Turn LED OFF
+    }
+}
+
+// Send AT command to ESP-8266
+void ESP_SendCommand(const char *cmd) {
+    UART1_SendString(cmd);
+    UART1_SendString("\r\n");
+}
+
+int main(void) {
+    SystemInit();
+    UART1_Init();
+    GPIO_Init();
+
+    // Connect ESP-8266 to WiFi (replace with your WiFi credentials)
+    ESP_SendCommand("AT+CWMODE=1");  // Set to station mode
+    ESP_SendCommand("AT+CWJAP=\"yourSSID\",\"yourPASSWORD\"");
+
+    while (1) {
+        if (USART1->STATR & USART_STATR_RXNE) { // Check if data is received
+            char start = UART1_Read();
+            if (start == 'L') { // Command format: Lxy (x = LED number 1-4, y = state 0/1)
+                char led = UART1_Read();
+                char state = UART1_Read();
+
+                int ledNum = led - '1';
+                int ledState = state - '0';
+
+                if (ledNum >= 0 && ledNum < 4) {
+                    LED_Control(ledNum, ledState);
+                }
+            }
+        }
+    }
+}
+
+
+
+
+Alternate Code
+#include <ch32v00x.h>
+#include <stdio.h>
+#include <string.h>
+
+void UART1_Init(void) {
+    RCC->APB2PCENR |= RCC_APB2Periph_USART1;  // Enable UART1 clock
+    RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;   // Enable GPIOD clock
+
+    GPIOD->CFGLR &= ~(0xF << (2 * 4));  // Clear PD2 config
+    GPIOD->CFGLR |= (0x4 << (2 * 4));   // Set PD2 as input with pull-up
+
+    USART1->BRR = 48000000 / 9600; // Baud rate (Assuming 48MHz clock)
+    USART1->CTLR1 |= USART_CTLR1_RE | USART_CTLR1_TE | USART_CTLR1_UE; // Enable RX, TX, and UART
+}
+
+char UART1_Read(void) {
+    while (!(USART1->STATR & USART_STATR_RXNE)); // Wait until data is received
+    return (char)USART1->DATAR;
+}
+
+void GPIO_Init(void) {
+    RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;  // Enable GPIOD clock
+
+    // Set PD3, PD4, PD5, PD6 as output for LEDs
+    GPIOD->CFGLR &= ~((0xF << (3 * 4)) | (0xF << (4 * 4)) | (0xF << (5 * 4)) | (0xF << (6 * 4)));
+    GPIOD->CFGLR |= ((0x1 << (3 * 4)) | (0x1 << (4 * 4)) | (0x1 << (5 * 4)) | (0x1 << (6 * 4))); // General push-pull output
+}
+
+void LED_Control(int led, int state) {
+    int pin = 3 + led; // LED 1 maps to PD3, etc.
+    if (state) {
+        GPIOD->BSHR = (1 << pin);  // Turn LED ON
+    } else {
+        GPIOD->BSHR = (1 << (pin + 16)); // Turn LED OFF
+    }
+}
+
+int main(void) {
+    SystemInit();
+    UART1_Init();
+    GPIO_Init();
+
+    while (1) {
+        if (USART1->STATR & USART_STATR_RXNE) { // Check if data is available
+            char start = UART1_Read();
+            if (start == 'L') {
+                char led = UART1_Read();
+                char state = UART1_Read();
+
+                int ledNum = led - '1';  // Convert '1'-'4' to 0-3
+                int ledState = state - '0'; // Convert '0' or '1' to int
+
+                if (ledNum >= 0 && ledNum < 4) {
+                    LED_Control(ledNum, ledState);
+                }
+            }
+        }
+    }
+}
+
+
+
+
+Seperate Blynk
+#define BLYNK_TEMPLATE_ID "TMPL3pYU7nlUx"
+#define BLYNK_TEMPLATE_NAME "SmartestHome"
+#define BLYNK_AUTH_TOKEN "FRF70BbXEzGb6jINIyQPbFungQP7kiCU"
+
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+
+int LED1 = D1; // Red LED is connected to pin D1 of NodeMCU Board
+int LED2 = D2; // Yellow LED is connected to pin D2 of NodeMCU Board
+int LED3 = D3; // Green LED is connected to pin D3 of NodeMCU Board
+int LED4 = D4; // Blue LED is connected to pin D4 of NodeMCU Board
+
+char auth[] = "FRF70BbXEzGb6jINIyQPbFungQP7kiCU"; // Put your Blynk Authentication token received on email
+char ssid[] = "Ranga"; // Put the Wi-Fi network's SSID here
+char pass[] = "9916337761"; // Put the Wi-Fi network's Password here
+
+BLYNK_WRITE(V0)
+{
+  int pinValue = param.asInt(); // Assigning incoming value from pin V1 to a variable
+  digitalWrite(LED1, pinValue);
+  // Process received value
+}
+
+BLYNK_WRITE(V1)
+{
+  int pinValue = param.asInt(); // Assigning incoming value from pin V2 to a variable
+  digitalWrite(LED2, pinValue);
+  // Process received value
+}
+
+BLYNK_WRITE(V2)
+{
+  int pinValue = param.asInt(); // Assigning incoming value from pin V3 to a variable
+  digitalWrite(LED3, pinValue);
+  // Process received value
+}
+
+BLYNK_WRITE(V3)
+{
+  int pinValue = param.asInt(); // Assigning incoming value from pin V4 to a variable
+  digitalWrite(LED4, pinValue);
+  // Process received value
+}
+
+void setup()
+{
+  pinMode(LED1, OUTPUT); // Declaring LED1 as output
+  pinMode(LED2, OUTPUT); // Declaring LED2 as output
+  pinMode(LED3, OUTPUT); // Declaring LED3 as output
+  pinMode(LED4, OUTPUT); // Declaring LED4 as output
+  Serial.begin(115200); // Define baud rate for serial communication
+  Blynk.begin(auth, ssid, pass); // Blynk starts by providing essential details
+}
+
+void loop()
+{
+  Blynk.run();
+
+  if (Serial.available()) // If data is available on serial port
+  {
+    char data_received;
+    data_received = Serial.read(); // Data received from Bluetooth
+    if (data_received == '1')
+    {
+      digitalWrite(LED1, HIGH); // LED1 pin is given a HIGH logic
+      Blynk.virtualWrite(V1, 1); // Blynk App receives the HIGH logic
+      Serial.write("LED1 turned ON\n");
+    }
+    else if (data_received == '2')
+    {
+      digitalWrite(LED1, LOW);
+      Blynk.virtualWrite(V1, 0);
+      Serial.write("LED1 turned OFF\n");
+    }
+    else if (data_received == '3')
+    {
+      digitalWrite(LED2, HIGH);
+      Blynk.virtualWrite(V2, 1);
+      Serial.write("LED2 turned ON\n");
+    }
+    else if (data_received == '4')
+    {
+      digitalWrite(LED2, LOW);
+      Blynk.virtualWrite(V2, 0);
+      Serial.write("LED2 turned OFF\n");
+    }
+    else if (data_received == '5')
+    {
+      digitalWrite(LED3, HIGH);
+      Blynk.virtualWrite(V3, 1);
+      Serial.write("LED3 turned ON\n");
+    }
+    else if (data_received == '6')
+    {
+      digitalWrite(LED3, LOW);
+      Blynk.virtualWrite(V3, 0);
+      Serial.write("LED3 turned OFF\n");
+    }
+    else if (data_received == '7')
+    {
+      digitalWrite(LED4, HIGH);
+      Blynk.virtualWrite(V4, 1);
+      Serial.write("LED4 turned ON\n");
+    }
+    else if (data_received == '8')
+    {
+      digitalWrite(LED4, LOW);
+      Blynk.virtualWrite(V4, 0);
+      Serial.write("LED4 turned OFF\n");
+    }
+  }
+}
