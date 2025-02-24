@@ -109,6 +109,16 @@ The Smart Home Automation project integrates the VSD Squadron Mini RISC-V board 
 | PD6              | -               | LED4 (+ve)  |
 | GND              | -               | LED1,2,3,4 (-ve) |
 
+**Components Required:**
+
+| Component              | Quantity |
+|-----------------------|----------|
+| VSD Squadron Mini     | 1        |
+| Node MCU ESP8266      | 1        |
+| LED                   | 4        |
+| Jumper Wires          | 10       |
+| Breadboard            | 1        |
+
 **Circuit Connection:**
 Below is the circuit connection diagram for the Smart Home Automation system:
 
