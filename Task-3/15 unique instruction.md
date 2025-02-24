@@ -1,6 +1,8 @@
 HERE IS A LIST OF 15 UNIQUE INSTRUCTION SET ALONG WITH 32 BIT REPRESENTATION FOR EACH.
 
 
+
+
 R-Type (Register-Register Instructions)
 
 1.Instruction: mul a5, a4, a5
@@ -66,6 +68,10 @@ funct7        rs2        rs1     funct3    rd        opcode
 Final Hexadecimal Instruction:
 0x00030333
 This instruction sltu a5, a0, a5 performs an unsigned comparison between the values in registers a0 and a5. If a0 is less than a5, it sets a5 to 1; otherwise, it sets a5 to 0. The machine code for this instruction is 0x00030333.
+
+
+
+
 
 
 
@@ -181,6 +187,13 @@ This instruction jalr ra, 16(sp) jumps to the address 16 + sp and stores the ret
 
 
 
+
+
+
+
+
+
+
 S-Type(Store Instructions)
 
 
@@ -232,6 +245,14 @@ This instruction sw a5, -20(s0) stores the contents of register a5 into memory a
 
 
 
+
+
+
+
+
+
+
+
 B-Type(Branch Instructions)
 
 1.Instruction: bgez a5, 4e
@@ -252,6 +273,14 @@ imm[12]          imm[10:5]    rs1     funct3   imm[4:1]    imm[11]    opcode
 Final Hexadecimal Instruction:
 0x0007DB63
 This instruction bgez a5, 4e branches to the address PC + 0x4e if the value in register a5 is greater than or equal to zero. The machine code for this instruction is 0x0007DB63.
+
+
+
+
+
+
+
+
 
 
 
@@ -304,6 +333,13 @@ This instruction auipc ra, 0x0 adds the immediate value 0x0 to the current progr
 
 
 
+
+
+
+
+
+
+
 J-Type(Jump Instruction)
 
 1.Instruction: j 70<.L4>
@@ -324,6 +360,10 @@ imm[20]    imm[10:1]    imm[11]    imm[19:12]    rd    opcode
 Final Hexadecimal Instruction:
 0xA831
 This instruction j 70<.L4> is an unconditional jump instruction that jumps to the address PC + 70. The machine code for this instruction is 0xA831.
+
+
+
+
 
 
 Other instruction
