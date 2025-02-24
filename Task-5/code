@@ -259,3 +259,98 @@ void loop()
     }
   }
 }
+
+
+
+
+Code -3
+
+// Smart Home Automation using VSD Mini RISC-V and ESP8266
+
+// VSD Mini RISC-V Board Code
+#define LED1 3  // PD3
+#define LED2 4  // PD4
+#define LED3 5  // PD5
+#define LED4 6  // PD6
+
+void setup() {
+  // Initialize UART for communication with ESP8266
+  Serial.begin(9600);
+
+  // Configure LED pins as output
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+  pinMode(LED4, OUTPUT);
+}
+
+void loop() {
+  if (Serial.available() > 0) { // Ensure data is available
+    char command = Serial.read();
+    switch (command) {
+      case '1':
+        digitalWrite(LED1, HIGH);
+        break;
+      case '2':
+        digitalWrite(LED1, LOW);
+        break;
+      case '3':
+        digitalWrite(LED2, HIGH);
+        break;
+      case '4':
+        digitalWrite(LED2, LOW);
+        break;
+      case '5':
+        digitalWrite(LED3, HIGH);
+        break;
+      case '6':
+        digitalWrite(LED3, LOW);
+        break;
+      case '7':
+        digitalWrite(LED4, HIGH);
+        break;
+      case '8':
+        digitalWrite(LED4, LOW);
+        break;
+    }
+  }
+}
+
+// ESP8266 Code
+#define BLYNK_TEMPLATE_ID "YOUR_TEMPLATE_ID"
+#define BLYNK_DEVICE_NAME "SmartHome"
+#define BLYNK_AUTH_TOKEN "YOUR_AUTH_TOKEN"
+#include <BlynkSimpleEsp8266.h>
+
+char ssid[] = "YOUR_WIFI_SSID";
+char pass[] = "YOUR_WIFI_PASSWORD";
+
+void setup() {
+  Serial.begin(9600); // UART to VSD Mini RISC-V
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+}
+
+BLYNK_WRITE(V1) { // LED1 ON/OFF
+  int value = param.asInt();
+  Serial.write(value ? '1' : '2');
+}
+
+BLYNK_WRITE(V2) { // LED2 ON/OFF
+  int value = param.asInt();
+  Serial.write(value ? '3' : '4');
+}
+
+BLYNK_WRITE(V3) { // LED3 ON/OFF
+  int value = param.asInt();
+  Serial.write(value ? '5' : '6');
+}
+
+BLYNK_WRITE(V4) { // LED4 ON/OFF
+  int value = param.asInt();
+  Serial.write(value ? '7' : '8');
+}
+
+void loop() {
+  Blynk.run();
+}
+
