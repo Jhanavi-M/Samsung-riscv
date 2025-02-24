@@ -112,7 +112,8 @@ The Smart Home Automation project integrates the VSD Squadron Mini RISC-V board 
 **Circuit Connection:**
 Below is the circuit connection diagram for the Smart Home Automation system:
 
-![Circuit Connection]-Task-5/blockdiagram.jpg
+![Circuit Connection](./Task-5/blockdiagram.jpg)
+
 
 ---
 
